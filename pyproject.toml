@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "tg"
+version = "0.1.0"
+description = ""
+authors = ["MathXCruz <matheus.cruz1996@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+numpy = "^1.25.0"
+scipy = "^1.11.1"
+matplotlib = "^3.7.2"
+pandas = "^2.0.3"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.24.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
