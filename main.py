@@ -45,7 +45,7 @@ def main():
     try:
         Npanels = int(input('Amount of panels in airfoil = '))
     except:
-        Npanels = 10
+        Npanels = 100
     try:
         rho = float(input('Air density [Kg/m³] = '))
     except:
@@ -91,9 +91,8 @@ def main():
 
         assign_pressure_coefficient(freestream, panels)
 
-        Cl = calculate_lift_coefficient(
-            freestream, panels, gamma, x_min, x_max
-        )
+        airfoils = [Airfoil(airfoil, a, Npanels*100, c) for a in alpha]
+        Cl = calculate_lift_coefficient(freestream, panels, gamma, airfoils)
         Cm = calculate_moment_coefficient(panels)
 
         L = [cl * S * rho * u_inf**2 * 0.5 for cl in Cl]
@@ -107,14 +106,14 @@ def main():
         max_torsion = alpha[-1] - alpha[0]
         i += 1
         print(
-            f'Iteration {i} finished in {time.time() - start_time} seconds with alpha = {alpha}'
+            f'Iteration {i} finished in {time.time() - start_time} seconds with alpha = {alpha}, max_torsion = {max_torsion}'
         )
         print(f'L = {L}')
         print(f'T = {T}')
         if max_torsion >= 90:
             print('\nDivergence occured!!')
         if abs(d_torsion[-1]) <= 0.5:
-            print(f'\nThe simulation converged, max torsion = {d_torsion[-1]}°.')
+            print(f'\nThe simulation converged, max torsion = {max_torsion}°.')
 
 
 if __name__ == '__main__':

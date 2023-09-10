@@ -1,4 +1,5 @@
 *.csv
 *.pdf
-__pychache__
+__pychache__/
 *.lock
+*.pyc
