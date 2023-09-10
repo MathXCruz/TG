@@ -11,7 +11,7 @@ from panel_method import (
     calculate_moment_coefficient,
 )
 from itertools import chain
-from finite_element_method import calculate_displacements
+from finite_element_method import calculate_displacements, format_stiffness_matrix
 import time
 
 
@@ -41,11 +41,11 @@ def main():
     try:
         alpha = float(input('Inital angle of attack [°] = '))
     except:
-        alpha = 0
+        alpha = 5
     try:
         Npanels = int(input('Amount of panels in airfoil = '))
     except:
-        Npanels = 200
+        Npanels = 10
     try:
         rho = float(input('Air density [Kg/m³] = '))
     except:
@@ -53,7 +53,7 @@ def main():
     try:
         u_inf = float(input('Airflow speed [m/s] = '))
     except:
-        u_inf = 1
+        u_inf = 10
 
     print(
         f'\nInput parameters:\nc = {c}, NACA = {airfoil}, E = {E}, G = {G}, span = {span}, N = {N}, alpha0 = {alpha}, Npanels = {Npanels}, rho = {rho}, u_inf = {u_inf}\n'
@@ -62,6 +62,7 @@ def main():
     d_torsion = [1]
     i = 0
     alpha = alpha * np.ones(N)
+    max_torsion = alpha[-1] - alpha[0]
 
     a = Airfoil(airfoil, 0, Npanels*100, c)
     x = np.array(a.X_r)
@@ -76,8 +77,9 @@ def main():
     x_min, x_max = min(panel.xa for panel in panels[0]), max(
         panel.xa for panel in panels[0]
     )
+    K = format_stiffness_matrix(E, G, N, I, J, section_length)
 
-    while alpha[-1] < 90 and abs(d_torsion[-1]) > 0.5:
+    while max_torsion < 90 and abs(d_torsion[-1]) > 0.5:
         start_time = time.time()
 
         freestream = [Freestream(u_inf, a) for a in alpha]
@@ -100,13 +102,16 @@ def main():
         T = [m + e * l for (l, m) in zip(L, M)]
         F = np.array(list((chain.from_iterable(zip(L, Mf, T)))))
 
-        d_torsion = calculate_displacements(E, G, N, I, J, section_length, F)
+        d_torsion = calculate_displacements(N, F, K)
         alpha = alpha - d_torsion
+        max_torsion = alpha[-1] - alpha[0]
         i += 1
         print(
             f'Iteration {i} finished in {time.time() - start_time} seconds with alpha = {alpha}'
         )
-        if alpha[-1] >= 90:
+        print(f'L = {L}')
+        print(f'T = {T}')
+        if max_torsion >= 90:
             print('\nDivergence occured!!')
         if abs(d_torsion[-1]) <= 0.5:
             print(f'\nThe simulation converged, max torsion = {d_torsion[-1]}°.')
