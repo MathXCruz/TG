@@ -344,7 +344,5 @@ def calculate_moment_coefficient(panels):
 def calculate_lift_coefficient(freestream, panels, gamma, airfoils):
     Cl = []
     for (f,g,p,a) in zip(freestream, gamma, panels, airfoils):
-        test1 = max(a.X_r)
-        test2 = min(a.X_r)
         Cl.append(g*sum(panel.length for panel in p)/(0.5*f.u_inf*(max(a.X_r)-min(a.X_r))))
     return Cl

@@ -53,7 +53,7 @@ def main():
     try:
         u_inf = float(input('Airflow speed [m/s] = '))
     except:
-        u_inf = 10
+        u_inf = 100
 
     print(
         f'\nInput parameters:\nc = {c}, NACA = {airfoil}, E = {E}, G = {G}, span = {span}, N = {N}, alpha0 = {alpha}, Npanels = {Npanels}, rho = {rho}, u_inf = {u_inf}\n'
@@ -92,9 +92,9 @@ def main():
         Cl = calculate_lift_coefficient(freestream, panels, gamma, airfoils)
         Cm = calculate_moment_coefficient(panels)
 
-        L = [cl * S * rho * u_inf**2 * 0.5 for cl in Cl]
+        L = [cl * S * rho * (np.cos(f.alpha) * f.u_inf)**2 * 0.5 for (cl, f) in zip(Cl, freestream)]
         Mf = [l * s for (l, s) in zip(L, range(N))]
-        M = [cm * S * rho * u_inf**2 * 0.5 for cm in Cm]
+        M = [cm * S * rho * (np.cos(f.alpha) * f.u_inf)**2 * 0.5 for (cm, f) in zip(Cm, freestream)]
         T = [m + e * l for (l, m) in zip(L, M)]
         F = np.array(list((chain.from_iterable(zip(L, Mf, T)))))
 
@@ -103,7 +103,7 @@ def main():
         max_torsion = alpha[-1] - alpha[0]
         i += 1
         print(
-            f'Iteration {i} finished in {time.time() - start_time} seconds with alpha = {alpha}, max_torsion = {max_torsion}'
+            f'Iteration {i} finished in {time.time() - start_time} seconds with alpha = {alpha}, torsion on last node = {d_torsion[-1]}'
         )
         print(f'L = {L}')
         print(f'T = {T}')
