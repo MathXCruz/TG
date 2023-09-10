@@ -74,9 +74,6 @@ def main():
     section_length = span / (N - 1)
     S = section_length * c
     panels = [define_panels(x, y, Npanels) for _ in range(N)]
-    x_min, x_max = min(panel.xa for panel in panels[0]), max(
-        panel.xa for panel in panels[0]
-    )
     K = format_stiffness_matrix(E, G, N, I, J, section_length)
 
     while max_torsion < 90 and abs(d_torsion[-1]) > 0.5:
