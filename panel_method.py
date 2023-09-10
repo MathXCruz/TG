@@ -305,3 +305,44 @@ def get_pressure_coefficient(panels, freestream):
     """
     for panel in panels:
         panel.cp = 1.0 - (panel.vt/freestream.u_inf)**2
+
+
+def calculate_variables(freestream, panels):
+    A = [build_matrix(p) for p in panels]
+    B = [build_rhs(p, f) for f in freestream for p in panels]
+    variables = [np.linalg.solve(a, b) for (a,b) in zip(A,B)]
+    return variables
+
+
+def assign_pressure_coefficient(freestream, panels):
+    for p in panels:
+        for f in freestream:
+            get_pressure_coefficient(p, f)
+
+
+def assign_tangential_velocity(freestream, panels, gamma):
+    for p in panels:
+        for (f,g) in zip(freestream, gamma):
+            get_tangential_velocity(p, f, g)
+
+
+def calculate_gamma(panels, variables):
+    for p in panels:
+        for i, panel in enumerate(p):
+            panel.sigma = variables[0][i]
+        gamma = [v[-1] for v in variables]
+    return gamma
+
+
+def calculate_moment_coefficient(panels):
+    Cm = []
+    for p in panels:
+        Cm.append(sum(panel.cp*(panel.xc-0.25)*panel.length*np.cos(panel.beta) for panel in p))
+    return Cm
+
+
+def calculate_lift_coefficient(freestream, panels, gamma, x_min, x_max):
+    Cl = []
+    for (f,g,p) in zip(freestream, gamma, panels):
+        Cl.append(g*sum(panel.length for panel in p)/(0.5*f.u_inf*(x_max-x_min)))
+    return Cl
