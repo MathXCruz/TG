@@ -315,15 +315,13 @@ def calculate_variables(freestream, panels):
 
 
 def assign_pressure_coefficient(freestream, panels):
-    for p in panels:
-        for f in freestream:
+        for (p, f) in zip(panels, freestream):
             get_pressure_coefficient(p, f)
 
 
 def assign_tangential_velocity(freestream, panels, gamma):
-    for p in panels:
-        for (f,g) in zip(freestream, gamma):
-            get_tangential_velocity(p, f, g)
+    for (p, f, g) in zip(panels, freestream, gamma):
+        get_tangential_velocity(p, f, g)
 
 
 def calculate_gamma(panels, variables):
