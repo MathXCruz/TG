@@ -45,7 +45,7 @@ def main():
     try:
         Npanels = int(input('Amount of panels in airfoil = '))
     except:
-        Npanels = 100
+        Npanels = 10
     try:
         rho = float(input('Air density [Kg/m³] = '))
     except:
@@ -88,7 +88,10 @@ def main():
 
         assign_pressure_coefficient(freestream, panels)
 
-        airfoils = [Airfoil(airfoil, a, Npanels*100, c) for a in alpha]
+        airfoils = [Airfoil(airfoil, f.alpha, Npanels*100, c) for f in freestream]
+        X = [np.array(a.X_r) for a in airfoils]
+        Y = [np.array(a.Y_r) for a in airfoils]
+        panels = [define_panels(x, y, Npanels) for (x, y) in zip(X, Y)]
         Cl = calculate_lift_coefficient(freestream, panels, gamma, airfoils)
         Cm = calculate_moment_coefficient(panels)
 
@@ -105,8 +108,6 @@ def main():
         print(
             f'Iteration {i} finished in {time.time() - start_time} seconds with alpha = {alpha}, torsion on last node = {d_torsion[-1]}'
         )
-        print(f'L = {L}')
-        print(f'T = {T}')
         if max_torsion >= 90:
             print('\nDivergence occured!!')
         if abs(d_torsion[-1]) <= 0.5:
