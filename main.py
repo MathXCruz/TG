@@ -21,7 +21,7 @@ def main():
         c = float(input('Chord length [m] = '))
     except:
         c = 1
-    airfoil = input('NACA airfoil series = ') or '0012'
+    airfoil = input('NACA airfoil series = ') or '4411'
     try:
         E = float(input('Elasticity Modulus [GPa] = ')) * 10e9
     except:
@@ -37,7 +37,7 @@ def main():
     try:
         N = int(input('Amount of wing structural nodes = '))
     except:
-        N = 10
+        N = 100
     try:
         alpha = float(input('Inital angle of attack [°] = '))
     except:
@@ -45,7 +45,7 @@ def main():
     try:
         Npanels = int(input('Amount of panels in airfoil = '))
     except:
-        Npanels = 10
+        Npanels = 20
     try:
         rho = float(input('Air density [Kg/m³] = '))
     except:
@@ -53,7 +53,7 @@ def main():
     try:
         u_inf = float(input('Airflow speed [m/s] = '))
     except:
-        u_inf = 100
+        u_inf = 155
 
     print(
         f'\nInput parameters:\nc = {c}, NACA = {airfoil}, E = {E}, G = {G}, span = {span}, N = {N}, alpha0 = {alpha}, Npanels = {Npanels}, rho = {rho}, u_inf = {u_inf}\n'
@@ -102,11 +102,11 @@ def main():
         F = np.array(list((chain.from_iterable(zip(L, Mf, T)))))
 
         d_torsion = calculate_displacements(N, F, K)
-        alpha = alpha - d_torsion
-        max_torsion = alpha[-1] - alpha[0]
+        alpha = alpha + d_torsion
+        max_torsion = abs(alpha[-1] - alpha[0])
         i += 1
         print(
-            f'Iteration {i} finished in {time.time() - start_time} seconds with alpha = {alpha}, torsion on last node = {d_torsion[-1]}'
+            f'Iteration {i} finished in {time.time() - start_time} seconds with alpha = {alpha}, max_torsion = {max_torsion} and torsion on last node = {d_torsion[-1]}'
         )
         if max_torsion >= 90:
             print('\nDivergence occured!!')
