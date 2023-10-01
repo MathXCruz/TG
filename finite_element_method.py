@@ -2,7 +2,7 @@ import numpy as np
 
 
 def calculate_displacements(N: int, F: np.array, K: np.array) -> np.array:
-    """ Calculate the torsional displacement on the nodes.
+    """Calculate the torsional displacement on the nodes.
 
     Args:
         N (int): The amount of nodes along the beam
@@ -26,7 +26,10 @@ def calculate_displacements(N: int, F: np.array, K: np.array) -> np.array:
 
     return d_torsion
 
-def format_stiffness_matrix(E: float, G: float, N: int, I: float, J: float, section_length: float) -> np.array:
+
+def format_stiffness_matrix(
+    E: float, G: float, N: int, I: float, J: float, section_length: float
+) -> np.array:
     """_summary_
 
     Args:
@@ -39,7 +42,7 @@ def format_stiffness_matrix(E: float, G: float, N: int, I: float, J: float, sect
 
     Returns:
         np.array: The formatted global stiffness matrix
-    """    
+    """
     k = np.asarray(
         [
             [
