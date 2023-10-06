@@ -22,7 +22,7 @@ def calculate_displacements(N: int, F: np.array, K: np.array) -> np.array:
     d_full = np.zeros(len(F))
     d_full[known_indices] = d_known
     d_full[unknown_indices] = d_unknown
-    d_torsion = d_full[2 : N * 3 : 3] * 180 / np.pi
+    d_torsion = d_full[2: N * 3: 3] * 180 / np.pi
 
     return d_torsion
 
@@ -36,8 +36,8 @@ def format_stiffness_matrix(
         E (float): Elasticity Modulus
         G (float): Shear Modulus
         N (int): The amount of nodes along the beam
-        I (float): Moment of Intertia
-        J (float): Polar Moment of Intertia
+        I (float): Moment of Inertia
+        J (float): Polar Moment of Inertia
         section_length (float): The size of each element between two nodes
 
     Returns:
@@ -83,7 +83,7 @@ def format_stiffness_matrix(
         dtype=np.float32,
     )
 
-    K = np.zeros(((N) * 3, (N) * 3))
+    K = np.zeros((N * 3, N * 3))
 
     for m in range(N - 1):
         for i in range(len(k[0])):

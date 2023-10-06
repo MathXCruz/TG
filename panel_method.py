@@ -261,7 +261,7 @@ def kutta_array(panels):
         )
     )
 
-    for i, panel in enumerate(panels[1 : N - 1]):
+    for i, panel in enumerate(panels[1: N - 1]):
         a[i] = (
             0.5
             / math.pi

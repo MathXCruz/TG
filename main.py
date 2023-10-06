@@ -118,7 +118,8 @@ def main():
         max_torsion = abs(alpha[-1] - alpha[0])
         i += 1
         print(
-            f'Iteration {i} finished in {time.time() - start_time} seconds with alpha = {alpha}, max_torsion = {max_torsion} and torsion on last node = {d_torsion[-1]}'
+            f'Iteration {i} finished in {time.time() - start_time} seconds with alpha = {alpha}, max_torsion = '
+            f'{max_torsion} and torsion on last node = {d_torsion[-1]}'
         )
         if max_torsion >= 90:
             print('\nDivergence occurred!!')

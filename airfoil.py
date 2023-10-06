@@ -1,19 +1,23 @@
 import numpy as np
 import pandas as pd
-from typing import Tuple
+from typing import Tuple, Any
+
+from numpy import ndarray, dtype
 
 
 class Airfoil:
-    def __init__(self, naca: str, theta: int, n_points: int, c: int):
+    def __init__(self, naca: str, theta: int, n_points: int, c: int, save_points: bool = False):
         X, Y, self.t, self.h = self.generate_points(naca, n_points, c)
         self.X_r, self.Y_r = self.rotate_airfoil(X, Y, -theta)
         df = pd.DataFrame({'x': self.X_r, 'y': self.Y_r})
-        df.to_csv(
-            f'./airfoils/{naca[0]}{naca[1]}{naca[2]}{naca[3]}_airfoil_{theta}_degrees.csv',
-            index=False,
-        )
+        if save_points:
+            df.to_csv(
+                f'./airfoils/{naca[0]}{naca[1]}{naca[2]}{naca[3]}_airfoil_{theta}_degrees.csv',
+                index=False,
+            )
 
-    def maximum_wing_thickness(self, c, digit) -> float:
+    @staticmethod
+    def maximum_wing_thickness(c, digit) -> float:
         """calculate maximum wing thickness
         c: chord length
         digit: naca digits "34" of four series
@@ -21,22 +25,25 @@ class Airfoil:
         return digit * (1 / 100) * c
 
     # position of the maximum thickness (p) in tenths of chord
-    def distance_from_leading_edge_to_max_camber(self, c, digit) -> float:
-        """distance from leading edge to maxiumum wing thickness
+    @staticmethod
+    def distance_from_leading_edge_to_max_camber(c, digit) -> float:
+        """distance from leading edge to maximum wing thickness
         c: chord length
         digit: naca digit "2" of four series
         """
         return digit * (10 / 100) * c
 
     # maximum camber (m) in percentage of the chord
-    def maximum_camber(self, c, digit) -> float:
+    @staticmethod
+    def maximum_camber(c, digit) -> float:
         """calculate maximum camber
         c: chord length
         digit: naca digit "1" of four series
         """
         return digit * (1 / 100) * c
 
-    def mean_camber_line_yc(self, m, p, X) -> float:
+    @staticmethod
+    def mean_camber_line_yc(m, p, X) -> ndarray[Any, dtype[Any]]:
         """mean camber line y-coordinates from x = 0 to x = p
         m: maximum camber in percentage of the chord
         p: position of the maximum camber in tenths of chord
@@ -51,7 +58,8 @@ class Airfoil:
             ]
         )
 
-    def thickness_distribution(self, t, x) -> np.array:
+    @staticmethod
+    def thickness_distribution(t, x) -> np.array:
         """Calculate the thickness distribution above (+) and below (-) the mean camber line
         t: airfoil thickness
         x: coordinates along the length of the airfoil, from 0 to c
@@ -67,7 +75,8 @@ class Airfoil:
         x5 = -0.1036 * np.power(x, 4)
         return coeff * (x1 + x2 + x3 + x4 + x5)
 
-    def dyc_dx(self, m, p, X) -> np.array:
+    @staticmethod
+    def dyc_dx(m, p, X) -> np.array:
         """derivative of mean camber line with respect to x
         m: maximum camber in percentage of the chord
         p: position of the maximum camber in tenths of chord
@@ -81,24 +90,28 @@ class Airfoil:
             ]
         )
 
-    def x_upper_coordinates(self, x, yt, theta) -> np.array:
+    @staticmethod
+    def x_upper_coordinates(x, yt, theta) -> np.array:
         """final x coordinates for the airfoil upper surface"""
         return x - yt * np.sin(theta)
 
-    def y_upper_coordinates(self, yc, yt, theta) -> np.array:
+    @staticmethod
+    def y_upper_coordinates(yc, yt, theta) -> np.array:
         """final y coordinates for the airfoil upper surface"""
         return yc + yt * np.cos(theta)
 
-    def x_lower_coordinates(self, x, yt, theta) -> np.array:
+    @staticmethod
+    def x_lower_coordinates(x, yt, theta) -> np.array:
         """final x coordinates for the airfoil lower surface"""
         return x + yt * np.sin(theta)
 
-    def y_lower_coordinates(self, yc, yt, theta) -> np.array:
+    @staticmethod
+    def y_lower_coordinates(yc, yt, theta) -> np.array:
         """final y coordinates for the airfoil lower surface"""
         return yc - yt * np.cos(theta)
 
     def generate_points(
-        self, naca: str, n_points: str, c: int
+        self, naca: str, n_points: int, c: int
     ) -> Tuple[np.array, np.array, float, float]:
         digits = [int(d) for d in naca]
         X = np.linspace(0, 1, int(n_points / 2))
@@ -124,8 +137,9 @@ class Airfoil:
             max_camber,
         )
 
+    @staticmethod
     def rotate_airfoil(
-        self, X: np.array, Y: np.array, theta: float
+            X: np.array, Y: np.array, theta: float
     ) -> Tuple[np.array, np.array]:
         theta = theta / 180 * np.pi
         xr = [xi * np.cos(theta) - yi * np.sin(theta) for xi, yi in zip(X, Y)]
