@@ -367,34 +367,28 @@ def get_tangential_velocity(panels: list[Panel], freestream: Freestream, gamma: 
     gamma -- circulation density.
     """
     N = len(panels)
-    A = np.empty((N, N + 1), dtype=float)
-    np.fill_diagonal(A, 0.0)
+    A = np.zeros((N, N + 1))
 
     for i, p_i in enumerate(panels):
-        for j, p_j in enumerate(panels):
-            if i != j:
-                A[i, j] = (
-                    0.5
-                    / math.pi
-                    * integral(
-                        p_i.xc,
-                        p_i.yc,
-                        p_j,
-                        -math.sin(p_i.beta),
-                        +math.cos(p_i.beta),
-                    )
-                )
-                A[i, N] -= (
-                    0.5
-                    / math.pi
-                    * integral(
-                        p_i.xc,
-                        p_i.yc,
-                        p_j,
-                        +math.cos(p_i.beta),
-                        +math.sin(p_i.beta),
-                    )
-                )
+        x_minus_xa = freestream.u_inf - p_i.xa
+        y_minus_ya = freestream.u_inf - p_i.ya
+
+        integrand1 = (
+                (x_minus_xa - np.sin(p_i.beta) * np.linspace(0, p_i.length, N))
+                * (-np.sin(p_i.beta))
+                + (y_minus_ya + np.cos(p_i.beta) * np.linspace(0, p_i.length, N))
+                * np.cos(p_i.beta)
+        )
+
+        integrand2 = (
+                (x_minus_xa - np.sin(p_i.beta) * np.linspace(0, p_i.length, N))
+                * np.cos(p_i.beta)
+                + (y_minus_ya + np.cos(p_i.beta) * np.linspace(0, p_i.length, N))
+                * np.sin(p_i.beta)
+        )
+
+        A[i, :N] = 0.5 / math.pi * integrate.simps(integrand1, dx=p_i.length / N)
+        A[i, N] = -0.5 / math.pi * integrate.simps(integrand2, dx=p_i.length / N)
 
     b = freestream.u_inf * np.sin(
         [freestream.alpha - panel.beta for panel in panels]
