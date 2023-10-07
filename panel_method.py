@@ -128,7 +128,9 @@ class Freestream:
         self.alpha = alpha * math.pi / 180          # degrees --> radians
 
 
-def integral(x: float, y: float, panel: Panel, dxdz: float, dydz: float) -> float:
+def integral(
+    x: float, y: float, panel: Panel, dxdz: float, dydz: float
+) -> float:
     """
     Evaluates the contribution of a panel at one point.
 
@@ -263,7 +265,7 @@ def kutta_array(panels: list[Panel]) -> np.array:
         )
     )
 
-    for i, panel in enumerate(panels[1: N - 1]):
+    for i, panel in enumerate(panels[1 : N - 1]):
         a[i] = (
             0.5
             / math.pi
@@ -357,7 +359,9 @@ def build_rhs(panels: list[Panel], freestream: Freestream) -> np.array:
     return b
 
 
-def get_tangential_velocity(panels: list[Panel], freestream: Freestream, gamma: float):
+def get_tangential_velocity(
+    panels: list[Panel], freestream: Freestream, gamma: float
+):
     """Computes the tangential velocity on the surface.
 
     Arguments
@@ -374,21 +378,27 @@ def get_tangential_velocity(panels: list[Panel], freestream: Freestream, gamma: 
         y_minus_ya = freestream.u_inf - p_i.ya
 
         integrand1 = (
-                (x_minus_xa - np.sin(p_i.beta) * np.linspace(0, p_i.length, N))
-                * (-np.sin(p_i.beta))
-                + (y_minus_ya + np.cos(p_i.beta) * np.linspace(0, p_i.length, N))
-                * np.cos(p_i.beta)
+            x_minus_xa - np.sin(p_i.beta) * np.linspace(0, p_i.length, N)
+        ) * (-np.sin(p_i.beta)) + (
+            y_minus_ya + np.cos(p_i.beta) * np.linspace(0, p_i.length, N)
+        ) * np.cos(
+            p_i.beta
         )
 
         integrand2 = (
-                (x_minus_xa - np.sin(p_i.beta) * np.linspace(0, p_i.length, N))
-                * np.cos(p_i.beta)
-                + (y_minus_ya + np.cos(p_i.beta) * np.linspace(0, p_i.length, N))
-                * np.sin(p_i.beta)
+            x_minus_xa - np.sin(p_i.beta) * np.linspace(0, p_i.length, N)
+        ) * np.cos(p_i.beta) + (
+            y_minus_ya + np.cos(p_i.beta) * np.linspace(0, p_i.length, N)
+        ) * np.sin(
+            p_i.beta
         )
 
-        A[i, :N] = 0.5 / math.pi * integrate.simps(integrand1, dx=p_i.length / N)
-        A[i, N] = -0.5 / math.pi * integrate.simps(integrand2, dx=p_i.length / N)
+        A[i, :N] = (
+            0.5 / math.pi * integrate.simps(integrand1, dx=p_i.length / N)
+        )
+        A[i, N] = (
+            -0.5 / math.pi * integrate.simps(integrand2, dx=p_i.length / N)
+        )
 
     b = freestream.u_inf * np.sin(
         [freestream.alpha - panel.beta for panel in panels]
@@ -413,24 +423,32 @@ def get_pressure_coefficient(panels: list[Panel], freestream: Freestream):
         panel.cp = 1.0 - (panel.vt / freestream.u_inf) ** 2
 
 
-def calculate_variables(freestream: list[Freestream], panels: list[list[Panel]]) -> np.array:
+def calculate_variables(
+    freestream: list[Freestream], panels: list[list[Panel]]
+) -> np.array:
     A = [build_matrix(p) for p in panels]
     B = [build_rhs(p, f) for f in freestream for p in panels]
     variables = [np.linalg.solve(a, b) for (a, b) in zip(A, B)]
     return variables
 
 
-def assign_pressure_coefficient(freestream: list[Freestream], panels: list[list[Panel]]):
+def assign_pressure_coefficient(
+    freestream: list[Freestream], panels: list[list[Panel]]
+):
     for (p, f) in zip(panels, freestream):
         get_pressure_coefficient(p, f)
 
 
-def assign_tangential_velocity(freestream: list[Freestream], panels: list[list[Panel]], gamma: list[float]):
+def assign_tangential_velocity(
+    freestream: list[Freestream], panels: list[list[Panel]], gamma: list[float]
+):
     for (p, f, g) in zip(panels, freestream, gamma):
         get_tangential_velocity(p, f, g)
 
 
-def calculate_gamma(panels: list[list[Panel]], variables: np.array) -> np.array:
+def calculate_gamma(
+    panels: list[list[Panel]], variables: np.array
+) -> np.array:
     gamma = np.array(0)
     for p in panels:
         for i, panel in enumerate(p):
@@ -455,10 +473,10 @@ def calculate_moment_coefficient(panels: list[list[Panel]]) -> list[float]:
 
 
 def calculate_lift_coefficient(
-        freestream: list[Freestream],
-        panels: list[list[Panel]],
-        gamma: list[float],
-        airfoils: list[Airfoil]
+    freestream: list[Freestream],
+    panels: list[list[Panel]],
+    gamma: list[float],
+    airfoils: list[Airfoil],
 ) -> list[float]:
     Cl = []
     for (f, g, p, a) in zip(freestream, gamma, panels, airfoils):

@@ -4,7 +4,14 @@ from typing import Tuple
 
 
 class Airfoil:
-    def __init__(self, naca: str, theta: int, n_points: int, c: int, save_points: bool = False):
+    def __init__(
+        self,
+        naca: str,
+        theta: int,
+        n_points: int,
+        c: int,
+        save_points: bool = False,
+    ):
         X, Y, self.t, self.h = self.generate_points(naca, n_points, c)
         self.X_r, self.Y_r = self.rotate_airfoil(X, Y, -theta)
         df = pd.DataFrame({'x': self.X_r, 'y': self.Y_r})
@@ -137,7 +144,7 @@ class Airfoil:
 
     @staticmethod
     def rotate_airfoil(
-            X: np.array, Y: np.array, theta: float
+        X: np.array, Y: np.array, theta: float
     ) -> Tuple[np.array, np.array]:
         theta = theta / 180 * np.pi
         xr = [xi * np.cos(theta) - yi * np.sin(theta) for xi, yi in zip(X, Y)]

@@ -22,7 +22,7 @@ def calculate_displacements(N: int, F: np.array, K: np.array) -> np.array:
     d_full = np.zeros(len(F))
     d_full[known_indices] = d_known
     d_full[unknown_indices] = d_unknown
-    d_torsion = d_full[2: N * 3: 3] * 180 / np.pi
+    d_torsion = d_full[2 : N * 3 : 3] * 180 / np.pi
 
     return d_torsion
 
