@@ -2,13 +2,15 @@ from scipy import integrate
 import numpy as np
 import math
 
+from airfoil import Airfoil
+
 
 class Panel:
     """
     Contains information related to a panel.
     """
 
-    def __init__(self, xa, ya, xb, yb):
+    def __init__(self, xa: float, ya: float, xb: float, yb: float):
         """
         Initializes the panel.
 
@@ -55,11 +57,11 @@ class Panel:
         self.vt = 0.0  # tangential velocity
         self.cp = 0.0  # pressure coefficient
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'xa={self.xa}, ya={self.ya}, xc={self.xc}, yc={self.yc}, length={self.length}, sigma={self.sigma}, vt={self.vt}, cp={self.cp}, loc={self.loc}'
 
 
-def define_panels(x, y, N):
+def define_panels(x: np.array, y: np.array, N: int) -> np.array:
     """
     Discretizes the geometry into panels using the 'cosine' method.
 
@@ -92,7 +94,7 @@ def define_panels(x, y, N):
     # computes the y-coordinate of end-points
     I = 0
     for i in range(N):
-        while I < len(x) - 1:
+        while I < len(x) - 2:
             if (x[I] <= x_ends[i] <= x[I + 1]) or (
                 x[I + 1] <= x_ends[i] <= x[I]
             ):
@@ -114,7 +116,7 @@ def define_panels(x, y, N):
 class Freestream:
     """Freestream conditions."""
 
-    def __init__(self, u_inf=1.0, alpha=0.0):
+    def __init__(self, u_inf: float = 1.0, alpha: float = 0.0):
         """Sets the freestream conditions.
 
         Arguments
@@ -126,7 +128,7 @@ class Freestream:
         self.alpha = alpha * math.pi / 180          # degrees --> radians
 
 
-def integral(x, y, panel, dxdz, dydz):
+def integral(x: float, y: float, panel: Panel, dxdz: float, dydz: float) -> float:
     """
     Evaluates the contribution of a panel at one point.
 
@@ -148,7 +150,7 @@ def integral(x, y, panel, dxdz, dydz):
     Integral over the panel of the influence at the given target point.
     """
 
-    def integrand(s):
+    def integrand(s: float) -> float:
         return (
             (x - (panel.xa - math.sin(panel.beta) * s)) * dxdz
             + (y - (panel.ya + math.cos(panel.beta) * s)) * dydz
@@ -160,7 +162,7 @@ def integral(x, y, panel, dxdz, dydz):
     return integrate.quad(integrand, 0.0, panel.length)[0]
 
 
-def source_matrix(panels):
+def source_matrix(panels: list[Panel]) -> np.array:
     """Builds the source matrix.
 
     Arguments
@@ -193,7 +195,7 @@ def source_matrix(panels):
     return A
 
 
-def vortex_array(panels):
+def vortex_array(panels: list[Panel]) -> np.array:
     """Builds the vortex array.
 
     Arguments
@@ -224,7 +226,7 @@ def vortex_array(panels):
     return a
 
 
-def kutta_array(panels):
+def kutta_array(panels: list[Panel]) -> np.array:
     """Builds the Kutta-condition array.
 
     Arguments
@@ -307,7 +309,7 @@ def kutta_array(panels):
     return a
 
 
-def build_matrix(panels):
+def build_matrix(panels: list[Panel]) -> np.array:
     """Builds the matrix of the linear system.
 
     Arguments
@@ -330,7 +332,7 @@ def build_matrix(panels):
     return A
 
 
-def build_rhs(panels, freestream):
+def build_rhs(panels: list[Panel], freestream: Freestream) -> np.array:
     """Builds the RHS of the linear system.
 
     Arguments
@@ -355,7 +357,7 @@ def build_rhs(panels, freestream):
     return b
 
 
-def get_tangential_velocity(panels, freestream, gamma):
+def get_tangential_velocity(panels: list[Panel], freestream: Freestream, gamma: float):
     """Computes the tangential velocity on the surface.
 
     Arguments
@@ -405,7 +407,7 @@ def get_tangential_velocity(panels, freestream, gamma):
         panel.vt = vt[i]
 
 
-def get_pressure_coefficient(panels, freestream):
+def get_pressure_coefficient(panels: list[Panel], freestream: Freestream):
     """Computes the surface pressure coefficients.
 
     Arguments
@@ -417,24 +419,25 @@ def get_pressure_coefficient(panels, freestream):
         panel.cp = 1.0 - (panel.vt / freestream.u_inf) ** 2
 
 
-def calculate_variables(freestream, panels):
+def calculate_variables(freestream: list[Freestream], panels: list[list[Panel]]) -> np.array:
     A = [build_matrix(p) for p in panels]
     B = [build_rhs(p, f) for f in freestream for p in panels]
     variables = [np.linalg.solve(a, b) for (a, b) in zip(A, B)]
     return variables
 
 
-def assign_pressure_coefficient(freestream, panels):
+def assign_pressure_coefficient(freestream: list[Freestream], panels: list[list[Panel]]):
     for (p, f) in zip(panels, freestream):
         get_pressure_coefficient(p, f)
 
 
-def assign_tangential_velocity(freestream, panels, gamma):
+def assign_tangential_velocity(freestream: list[Freestream], panels: list[list[Panel]], gamma: list[float]):
     for (p, f, g) in zip(panels, freestream, gamma):
         get_tangential_velocity(p, f, g)
 
 
-def calculate_gamma(panels, variables):
+def calculate_gamma(panels: list[list[Panel]], variables: np.array) -> np.array:
+    gamma = np.array(0)
     for p in panels:
         for i, panel in enumerate(p):
             panel.sigma = variables[0][i]
@@ -442,7 +445,7 @@ def calculate_gamma(panels, variables):
     return gamma
 
 
-def calculate_moment_coefficient(panels):
+def calculate_moment_coefficient(panels: list[list[Panel]]) -> list[float]:
     Cm = []
     for p in panels:
         Cm.append(
@@ -457,7 +460,12 @@ def calculate_moment_coefficient(panels):
     return Cm
 
 
-def calculate_lift_coefficient(freestream, panels, gamma, airfoils):
+def calculate_lift_coefficient(
+        freestream: list[Freestream],
+        panels: list[list[Panel]],
+        gamma: list[float],
+        airfoils: list[Airfoil]
+) -> list[float]:
     Cl = []
     for (f, g, p, a) in zip(freestream, gamma, panels, airfoils):
         Cl.append(

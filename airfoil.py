@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
-from typing import Tuple, Any
-
-from numpy import ndarray, dtype
+from typing import Tuple
 
 
 class Airfoil:
@@ -43,7 +41,7 @@ class Airfoil:
         return digit * (1 / 100) * c
 
     @staticmethod
-    def mean_camber_line_yc(m, p, X) -> ndarray[Any, dtype[Any]]:
+    def mean_camber_line_yc(m, p, X) -> np.array:
         """mean camber line y-coordinates from x = 0 to x = p
         m: maximum camber in percentage of the chord
         p: position of the maximum camber in tenths of chord
